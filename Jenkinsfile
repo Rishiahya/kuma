@@ -10,7 +10,7 @@ node {
         env.DEIS_APP = 'mdn-dev'
 
         stage 'Build base'
-        echo 'make build-base VERSION=latest'
+        sh 'make build-base VERSION=latest'
 
         stage 'compose-test'
         sh 'make compose-test TEST=noext' // "smoke" tests with no external deps
@@ -21,11 +21,27 @@ node {
         stage 'Build & push kuma image'
         sh 'make build-kuma push-kuma'
 
-        stage "Deploy pull"
-        sh "make deis-pull"
+        //stage "Deploy pull"
+        //sh "make deis-pull"
 
-        stage "DB migrations"
-        sh "make k8s-migrate"
+        //stage "DB migrations"
+        //sh "make k8s-migrate"
+        break
+
+      case 'make-build-jenkinsfile':
+        env.DEIS_APP = 'mdn-dev'
+
+        stage 'Build base'
+        sh 'make build-base VERSION=latest'
+
+        stage 'compose-test'
+        sh 'make compose-test TEST=noext' // "smoke" tests with no external deps
+        sh 'make compose-test TEST="noext make build-static"' // required for many tests
+        sh 'docker-compose build'
+        sh 'make compose-test'
+
+        stage 'Build & push kuma image'
+        sh 'make build-kuma push-kuma'
         break
 
       default:
